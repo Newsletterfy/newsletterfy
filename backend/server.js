@@ -1,0 +1,1 @@
+const express = require('express');\nconst app = express();\nconst PORT = process.env.PORT || 5000;\n\napp.use(express.json());\n\napp.get('/', (req, res) => {\n  res.send('Welcome to Newsletterfy API!');\n});\n\napp.listen(PORT, () => {\n  console.log(`Server is running on port ${PORT}`);\n});
