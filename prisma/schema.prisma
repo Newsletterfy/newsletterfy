@@ -1,0 +1,379 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type             String
+  provider         String
+  providerAccountId String
+  refresh_token    String? @db.Text
+  access_token     String? @db.Text
+  expires_at       Int?
+  token_type       String?
+  scope            String?
+  id_token         String? @db.Text
+  session_state    String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  accounts      Account[]
+  sessions      Session[]
+
+  // Monetization relations
+  sponsoredAds      SponsoredAd[]
+  crossPromotions   CrossPromotion[]
+  subscriptionTiers SubscriptionTier[]
+  donations        Donation[]
+  donationTiers    DonationTier[]
+  digitalProducts  DigitalProduct[]
+  affiliateReferrals AffiliateReferral[]
+  affiliateLinks   AffiliateLink[]
+  monetizationStats MonetizationStats?
+
+  // Settings relations
+  emailPreferences    EmailPreferences?
+  newsletterSettings  NewsletterSettings?
+  notificationSettings NotificationSettings?
+  securitySettings    SecuritySettings?
+  newsletterTemplates NewsletterTemplate[]
+  newsletterSchedules NewsletterSchedule[]
+  newsletters         Newsletter[]
+  subscribers         Subscriber[]
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model SponsoredAd {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  userId      String
+  brandName   String
+  campaign    String
+  budget      Float
+  startDate   DateTime
+  endDate     DateTime
+  status      String
+  clicks      Int      @default(0)
+  impressions Int      @default(0)
+  revenue     Float    @default(0)
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model CrossPromotion {
+  id             String   @id @default(cuid())
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  userId         String
+  newsletterName String
+  description    String
+  subscribers    Int
+  revenuePerClick Float
+  clicks         Int      @default(0)
+  revenue        Float    @default(0)
+  startDate      DateTime
+  endDate        DateTime
+  status         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model SubscriptionTier {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  userId      String
+  name        String
+  price       Float
+  interval    String
+  features    String[]
+  status      String
+  subscribers Int      @default(0)
+  revenue     Float    @default(0)
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Donation {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  userId      String
+  supporter   String
+  amount      Float
+  message     String?
+  type        String
+  tierId      String?
+  tier        DonationTier? @relation(fields: [tierId], references: [id])
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model DonationTier {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  userId      String
+  name        String
+  amount      Float
+  description String
+  perks       String[]
+  active      Boolean  @default(true)
+  donations   Donation[]
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model DigitalProduct {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  userId      String
+  name        String
+  type        String
+  price       Float
+  description String
+  features    String[]
+  status      String
+  sales       Int      @default(0)
+  revenue     Float    @default(0)
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model AffiliateReferral {
+  id           String   @id @default(cuid())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  userId       String
+  referredUser String
+  plan         String
+  amount       Float
+  commission   Float
+  status       String
+  linkId       String
+  link         AffiliateLink @relation(fields: [linkId], references: [id])
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model AffiliateLink {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  userId      String
+  name        String
+  code        String   @unique
+  url         String
+  clicks      Int      @default(0)
+  conversions Int      @default(0)
+  revenue     Float    @default(0)
+  referrals   AffiliateReferral[]
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model MonetizationStats {
+  id                            String   @id @default(cuid())
+  userId                        String   @unique
+  sponsoredAdsAverageEarnings  Float    @default(0)
+  sponsoredAdsActiveSponsors   Int      @default(0)
+  sponsoredAdsPlatformFee      Int      @default(20)
+  crossPromotionsClicks        Int      @default(0)
+  crossPromotionsRevenue       Float    @default(0)
+  crossPromotionsPlatformFee   Int      @default(20)
+  paidSubscriptionsSubscribers Int      @default(0)
+  paidSubscriptionsRevenue     Float    @default(0)
+  paidSubscriptionsPlatformFee Int      @default(10)
+  tipsAndDonationsSupporters   Int      @default(0)
+  tipsAndDonationsTotal        Float    @default(0)
+  tipsAndDonationsPlatformFee  Int      @default(10)
+  digitalProductsSold          Int      @default(0)
+  digitalProductsRevenue       Float    @default(0)
+  digitalProductsPlatformFee   Int      @default(10)
+  affiliateProgramReferrals    Int      @default(0)
+  affiliateProgramCommission   Float    @default(0)
+  affiliateProgramPlatformFee  Int      @default(50)
+  user                         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model EmailPreferences {
+  id                String   @id @default(cuid())
+  userId            String   @unique
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  marketingEmails   Boolean  @default(true)
+  newsletterUpdates Boolean  @default(true)
+  productUpdates    Boolean  @default(true)
+  securityAlerts    Boolean  @default(true)
+  digestFrequency   String   @default("weekly") // daily, weekly, monthly
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model NewsletterSettings {
+  id                    String   @id @default(cuid())
+  userId                String   @unique
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  defaultTemplate       String?
+  defaultSenderName     String?
+  defaultSenderEmail    String?
+  defaultReplyTo        String?
+  autoSaveInterval     Int      @default(5) // minutes
+  schedulingPreference  String   @default("immediate") // immediate, scheduled, timezone-adjusted
+  defaultSendTime      String?  // HH:mm format
+  defaultTestEmails    String[] // Array of email addresses
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+}
+
+model NotificationSettings {
+  id                      String   @id @default(cuid())
+  userId                  String   @unique
+  user                    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  emailNotifications      Boolean  @default(true)
+  pushNotifications       Boolean  @default(true)
+  desktopNotifications    Boolean  @default(true)
+  subscriberAlerts        Boolean  @default(true)
+  performanceAlerts       Boolean  @default(true)
+  securityAlerts          Boolean  @default(true)
+  marketingAlerts         Boolean  @default(true)
+  quietHoursStart        String?  // HH:mm format
+  quietHoursEnd          String?  // HH:mm format
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+}
+
+model SecuritySettings {
+  id                    String   @id @default(cuid())
+  userId                String   @unique
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  twoFactorEnabled      Boolean  @default(false)
+  twoFactorMethod       String   @default("email") // email, authenticator, sms
+  loginNotifications    Boolean  @default(true)
+  ipWhitelist          String[] // Array of allowed IPs
+  lastPasswordChange    DateTime?
+  passwordExpiryDays    Int      @default(90)
+  sessionTimeout        Int      @default(30) // minutes
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+}
+
+model NewsletterTemplate {
+  id          String   @id @default(cuid())
+  userId      String
+  name        String
+  description String?
+  content     String   @db.Text
+  category    String   @default("general")
+  isDefault   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model NewsletterSchedule {
+  id            String   @id @default(cuid())
+  userId        String
+  newsletterId  String
+  sendDate      DateTime
+  sendTime      String
+  timezone      String
+  segment       String   @default("all")
+  frequency     String   @default("once")
+  repeatInterval Int?
+  repeatUnit    String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  newsletter    Newsletter @relation(fields: [newsletterId], references: [id], onDelete: Cascade)
+}
+
+model NewsletterStats {
+  id          String   @id @default(cuid())
+  newsletterId String  @unique
+  sentCount   Int      @default(0)
+  openCount   Int      @default(0)
+  clickCount  Int      @default(0)
+  bounceCount Int      @default(0)
+  lastSentAt  DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  newsletter  Newsletter @relation(fields: [newsletterId], references: [id], onDelete: Cascade)
+}
+
+model Newsletter {
+  id          String   @id @default(cuid())
+  userId      String
+  name        String
+  subject     String
+  preheader   String?
+  content     String   @db.Text
+  status      String   @default("draft") // draft, scheduled, sent
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  schedules   NewsletterSchedule[]
+  stats       NewsletterStats?
+  linkClicks  LinkClick[]
+  engagements SubscriberEngagement[]
+}
+
+model LinkClick {
+  id           String   @id @default(cuid())
+  newsletterId String
+  subscriberId String?
+  link         String
+  timestamp    DateTime
+  newsletter   Newsletter @relation(fields: [newsletterId], references: [id], onDelete: Cascade)
+  subscriber   Subscriber? @relation(fields: [subscriberId], references: [id], onDelete: SetNull)
+}
+
+model SubscriberEngagement {
+  id           String   @id @default(cuid())
+  subscriberId String
+  newsletterId String
+  type         String   // open, click
+  timestamp    DateTime
+  subscriber   Subscriber @relation(fields: [subscriberId], references: [id], onDelete: Cascade)
+  newsletter   Newsletter @relation(fields: [newsletterId], references: [id], onDelete: Cascade)
+}
+
+model Subscriber {
+  id              String   @id @default(cuid())
+  userId          String
+  email           String
+  name            String?
+  status          String   @default("active") // active, unsubscribed, bounced
+  lastEngagement  DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  engagements     SubscriberEngagement[]
+  linkClicks      LinkClick[]
+} 
