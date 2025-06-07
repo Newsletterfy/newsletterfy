@@ -257,14 +257,14 @@ BEGIN
     SELECT 
         COALESCE(sponsored_ads_fee, 20) as sponsored_ads_fee,
         COALESCE(cross_promotions_fee, 20) as cross_promotions_fee,
-        COALESCE(subscription_tiers_fee, 10) as subscription_tiers_fee,
-        COALESCE(donations_fee, 10) as donations_fee,
-        COALESCE(digital_products_fee, 10) as digital_products_fee,
-        COALESCE(affiliate_program_fee, 50) as affiliate_program_fee
+        COALESCE(subscription_tiers_fee, 20) as subscription_tiers_fee,
+        COALESCE(donations_fee, 20) as donations_fee,
+        COALESCE(digital_products_fee, 20) as digital_products_fee,
+        COALESCE(affiliate_program_fee, 20) as affiliate_program_fee
     INTO fees
     FROM platform_fees WHERE user_id = user_uuid
     UNION ALL
-    SELECT 20, 20, 10, 10, 10, 50 -- Default values
+    SELECT 20, 20, 20, 20, 20, 20 -- Default values
     LIMIT 1;
 
     -- Calculate total revenue from all streams

@@ -10,7 +10,7 @@ import {
   AffiliateProgram
 } from './monetization/index';
 
-export default function Monetization() {
+export default function Monetization({ onPushToNewsletter }) {
   const [isLoading, setIsLoading] = useState(true);
   const [activeSection, setActiveSection] = useState(null);
   const [sponsoredAds, setSponsoredAds] = useState([]);
@@ -24,10 +24,10 @@ export default function Monetization() {
   const [stats, setStats] = useState({
     sponsoredAds: { averageEarnings: 0, activeSponsors: 0, platformFee: 20 },
     crossPromotions: { clicks: 0, totalRevenue: 0, platformFee: 20 },
-    paidSubscriptions: { subscribers: 0, totalRevenue: 0, platformFee: 10 },
-    tipsAndDonations: { supporters: 0, totalTips: 0, platformFee: 10 },
-    digitalProducts: { productsSold: 0, totalSales: 0, platformFee: 10 },
-    affiliateProgram: { referrals: 0, totalCommission: 0, platformFee: 50 },
+    paidSubscriptions: { subscribers: 0, totalRevenue: 0, platformFee: 20 },
+    tipsAndDonations: { supporters: 0, totalTips: 0, platformFee: 20 },
+    digitalProducts: { productsSold: 0, totalSales: 0, platformFee: 20 },
+    affiliateProgram: { referrals: 0, totalCommission: 0, platformFee: 20 },
   });
 
   // Fetch initial data
@@ -42,20 +42,66 @@ export default function Monetization() {
       if (!response.ok) throw new Error('Failed to fetch monetization data');
       
       const data = await response.json();
-      setSponsoredAds(data.sponsoredAds);
-      setCrossPromotions(data.crossPromotions);
-      setSubscriptionTiers(data.subscriptionTiers);
-      setDonations(data.donations);
-      setDonationTiers(data.donationTiers);
-      setDigitalProducts(data.digitalProducts);
-      setAffiliateReferrals(data.affiliateReferrals);
-      setAffiliateLinks(data.affiliateLinks);
-      setStats(data.stats);
+      
+      // Set arrays with fallbacks
+      setSponsoredAds(data.sponsored_ads || []);
+      setCrossPromotions(data.cross_promotions || []);
+      setSubscriptionTiers(data.subscription_tiers || []);
+      setDonations(data.donations || []);
+      setDonationTiers(data.donation_tiers || []);
+      setDigitalProducts(data.digital_products || []);
+      setAffiliateReferrals(data.affiliate_referrals || []);
+      setAffiliateLinks(data.affiliate_links || []);
+      
+      // Transform API response to match frontend expectations
+      const transformedStats = {
+        sponsoredAds: {
+          averageEarnings: data.stats?.sponsored_ads?.average_earnings || 0,
+          activeSponsors: data.stats?.sponsored_ads?.active_sponsors || 0,
+          platformFee: data.stats?.sponsored_ads?.platform_fee || 20
+        },
+        crossPromotions: {
+          clicks: data.stats?.cross_promotions?.clicks || 0,
+          totalRevenue: data.stats?.cross_promotions?.total_revenue || 0,
+          platformFee: data.stats?.cross_promotions?.platform_fee || 20
+        },
+        paidSubscriptions: {
+          subscribers: data.stats?.paid_subscriptions?.subscribers || 0,
+          totalRevenue: data.stats?.paid_subscriptions?.total_revenue || 0,
+          platformFee: data.stats?.paid_subscriptions?.platform_fee || 20
+        },
+        tipsAndDonations: {
+          supporters: data.stats?.tips_and_donations?.supporters || 0,
+          totalTips: data.stats?.tips_and_donations?.total_tips || 0,
+          platformFee: data.stats?.tips_and_donations?.platform_fee || 20
+        },
+        digitalProducts: {
+          productsSold: data.stats?.digital_products?.products_sold || 0,
+          totalSales: data.stats?.digital_products?.total_sales || 0,
+          platformFee: data.stats?.digital_products?.platform_fee || 20
+        },
+        affiliateProgram: {
+          referrals: data.stats?.affiliate_program?.referrals || 0,
+          totalCommission: data.stats?.affiliate_program?.total_commission || 0,
+          platformFee: data.stats?.affiliate_program?.platform_fee || 20
+        }
+      };
+      
+      setStats(transformedStats);
     } catch (error) {
       toast.error('Failed to load monetization data');
       console.error(error);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handlePushToNewsletter = (adContent) => {
+    if (onPushToNewsletter) {
+      onPushToNewsletter(adContent);
+      // Switch back to main view to allow user to go to newsletter
+      setActiveSection(null);
+      toast.success('Ad content ready! Click "Go to Newsletter" to add it to your draft.');
     }
   };
 
@@ -110,12 +156,22 @@ export default function Monetization() {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-gray-900 mb-6">Monetization</h2>
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold text-gray-900">Monetization</h2>
+        {onPushToNewsletter && activeSection === null && (
+          <div className="bg-blue-50 rounded-lg p-3">
+            <p className="text-sm text-blue-700">
+              💡 Accept sponsored ads and push them directly to your newsletter creation!
+            </p>
+          </div>
+        )}
+      </div>
       
       {activeSection === 'sponsored-ads' ? (
         <SponsoredAds 
           sponsoredAds={sponsoredAds} 
           onClose={() => setActiveSection(null)} 
+          onPushToNewsletter={handlePushToNewsletter}
         />
       ) : activeSection === 'cross-promotions' ? (
         <CrossPromotions 
@@ -155,17 +211,17 @@ export default function Monetization() {
               {
                 icon: "fa-chart-line",
                 color: "green",
-                text: `Average earnings: $${stats.sponsoredAds.averageEarnings} (your share: $${stats.sponsoredAds.averageEarnings * 0.8})`
+                text: `Average earnings: $${(stats.sponsoredAds?.averageEarnings || 0).toFixed(2)} (your share: $${((stats.sponsoredAds?.averageEarnings || 0) * 0.8).toFixed(2)})`
               },
               {
                 icon: "fa-handshake",
                 color: "green",
-                text: `${stats.sponsoredAds.activeSponsors} active sponsors`
+                text: `${stats.sponsoredAds?.activeSponsors || 0} active sponsors`
               },
               {
                 icon: "fa-info-circle",
                 color: "cyan",
-                text: `Platform fee: ${stats.sponsoredAds.platformFee}%`
+                text: `Platform fee: ${stats.sponsoredAds?.platformFee || 20}%`
               }
             ]}
             onClick={() => setActiveSection('sponsored-ads')}
@@ -181,17 +237,17 @@ export default function Monetization() {
               {
                 icon: "fa-mouse-pointer",
                 color: "green",
-                text: `${crossPromotions.reduce((sum, promo) => sum + promo.clicks, 0)} clicks generated`
+                text: `${crossPromotions.reduce((sum, promo) => sum + (promo.clicks || 0), 0)} clicks generated`
               },
               {
                 icon: "fa-dollar-sign",
                 color: "green",
-                text: `Total revenue: $${crossPromotions.reduce((sum, promo) => sum + promo.revenue, 0).toFixed(2)} (your share: $${(crossPromotions.reduce((sum, promo) => sum + promo.revenue, 0) * 0.8).toFixed(2)})`
+                text: `Total revenue: $${crossPromotions.reduce((sum, promo) => sum + (promo.revenue || 0), 0).toFixed(2)} (your share: $${(crossPromotions.reduce((sum, promo) => sum + (promo.revenue || 0), 0) * 0.8).toFixed(2)})`
               },
               {
                 icon: "fa-info-circle",
                 color: "cyan",
-                text: `Platform fee: ${stats.crossPromotions.platformFee}%`
+                text: `Platform fee: ${stats.crossPromotions?.platformFee || 20}%`
               }
             ]}
             onClick={() => setActiveSection('cross-promotions')}
@@ -201,23 +257,23 @@ export default function Monetization() {
           <MonetizationCard
             icon="fa-credit-card"
             title="Paid Subscriptions"
-            description="Offer premium content through paid subscriptions and earn 90% of subscription revenue."
+            description="Offer premium content through paid subscriptions and earn 80% of subscription revenue."
             color="yellow"
             stats={[
               {
                 icon: "fa-users",
                 color: "green",
-                text: `${subscriptionTiers.reduce((sum, tier) => sum + tier.subscribers, 0)} subscribers`
+                text: `${subscriptionTiers.reduce((sum, tier) => sum + (tier.subscribers || 0), 0)} subscribers`
               },
               {
                 icon: "fa-dollar-sign",
                 color: "green",
-                text: `Total revenue: $${subscriptionTiers.reduce((sum, tier) => sum + tier.revenue, 0).toFixed(2)} (your share: $${(subscriptionTiers.reduce((sum, tier) => sum + tier.revenue, 0) * 0.9).toFixed(2)})`
+                text: `Total revenue: $${subscriptionTiers.reduce((sum, tier) => sum + (tier.revenue || 0), 0).toFixed(2)} (your share: $${(subscriptionTiers.reduce((sum, tier) => sum + (tier.revenue || 0), 0) * 0.8).toFixed(2)})`
               },
               {
                 icon: "fa-info-circle",
                 color: "cyan",
-                text: `Platform fee: ${stats.paidSubscriptions.platformFee}%`
+                text: `Platform fee: ${stats.paidSubscriptions?.platformFee || 20}%`
               }
             ]}
             onClick={() => setActiveSection('paid-subscriptions')}
@@ -238,12 +294,12 @@ export default function Monetization() {
               {
                 icon: "fa-dollar-sign",
                 color: "green",
-                text: `Total tips: $${donations.reduce((sum, d) => sum + d.amount, 0).toFixed(2)} (your share: $${(donations.reduce((sum, d) => sum + d.amount, 0) * 0.9).toFixed(2)})`
+                text: `Total tips: $${donations.reduce((sum, d) => sum + (d.amount || 0), 0).toFixed(2)} (your share: $${(donations.reduce((sum, d) => sum + (d.amount || 0), 0) * 0.8).toFixed(2)})`
               },
               {
                 icon: "fa-info-circle",
                 color: "cyan",
-                text: `Platform fee: ${stats.tipsAndDonations.platformFee}%`
+                text: `Platform fee: ${stats.tipsAndDonations?.platformFee || 20}%`
               }
             ]}
             onClick={() => setActiveSection('tips-donations')}
@@ -259,17 +315,17 @@ export default function Monetization() {
               {
                 icon: "fa-box",
                 color: "green",
-                text: `${digitalProducts.reduce((sum, product) => sum + product.sales, 0)} products sold`
+                text: `${digitalProducts.reduce((sum, product) => sum + (product.sales || 0), 0)} products sold`
               },
               {
                 icon: "fa-dollar-sign",
                 color: "green",
-                text: `Total sales: $${digitalProducts.reduce((sum, product) => sum + product.revenue, 0).toFixed(2)} (your share: $${(digitalProducts.reduce((sum, product) => sum + product.revenue, 0) * 0.9).toFixed(2)})`
+                text: `Total sales: $${digitalProducts.reduce((sum, product) => sum + (product.revenue || 0), 0).toFixed(2)} (your share: $${(digitalProducts.reduce((sum, product) => sum + (product.revenue || 0), 0) * 0.8).toFixed(2)})`
               },
               {
                 icon: "fa-info-circle",
                 color: "cyan",
-                text: `Platform fee: ${stats.digitalProducts.platformFee}%`
+                text: `Platform fee: ${stats.digitalProducts?.platformFee || 20}%`
               }
             ]}
             onClick={() => setActiveSection('digital-products')}
@@ -279,7 +335,7 @@ export default function Monetization() {
           <MonetizationCard
             icon="fa-share-alt"
             title="Affiliate Program"
-            description="Earn 50% commission by promoting Newsletterfy to your audience."
+            description="Earn 20% recurring commission on referred platform subscriptions. Commission continues monthly until subscriber cancels."
             color="green"
             stats={[
               {
@@ -290,12 +346,12 @@ export default function Monetization() {
               {
                 icon: "fa-dollar-sign",
                 color: "green",
-                text: `Total commission: $${affiliateReferrals.reduce((sum, ref) => sum + ref.commission, 0).toFixed(2)}`
+                text: `Total commission: $${affiliateReferrals.reduce((sum, ref) => sum + (ref.commission || 0), 0).toFixed(2)}`
               },
               {
                 icon: "fa-info-circle",
                 color: "cyan",
-                text: `Platform fee: ${stats.affiliateProgram.platformFee}%`
+                text: `Platform fee: ${stats.affiliateProgram?.platformFee || 20}%`
               }
             ]}
             onClick={() => setActiveSection('affiliate-program')}

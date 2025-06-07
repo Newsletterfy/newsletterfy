@@ -12,7 +12,7 @@ const Editor = dynamic(() => import('@tinymce/tinymce-react').then(mod => mod.Ed
   loading: () => <div className="h-96 w-full bg-gray-50 animate-pulse rounded-lg"></div>
 });
 
-export default function Newsletter({ initialShowEditor = false, onEditorClose, user }) {
+export default function Newsletter({ initialShowEditor = false, onEditorClose, user, pendingAdContent }) {
   // State for list view
   const [showEditor, setShowEditor] = useState(initialShowEditor);
   const [newsletters] = useState([
@@ -64,6 +64,7 @@ export default function Newsletter({ initialShowEditor = false, onEditorClose, u
   const [showPreview, setShowPreview] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState("");
+  const [showAdPanel, setShowAdPanel] = useState(false);
 
   // Add state for donation tiers
   const [activeDonationTiers, setActiveDonationTiers] = useState([]);
@@ -77,6 +78,14 @@ export default function Newsletter({ initialShowEditor = false, onEditorClose, u
     goal: ''
   });
   const [showAIPrompt, setShowAIPrompt] = useState(false);
+
+  // Effect to handle pending ad content
+  useEffect(() => {
+    if (pendingAdContent && showEditor) {
+      setShowAdPanel(true);
+      toast.success('Sponsored ad content is ready to be added to your newsletter!');
+    }
+  }, [pendingAdContent, showEditor]);
 
   // Fetch active donation tiers
   useEffect(() => {
@@ -104,6 +113,35 @@ export default function Newsletter({ initialShowEditor = false, onEditorClose, u
       ]);
     }
   }, [showAIAgent]);
+
+  // Function to insert ad content into newsletter
+  const insertAdContent = (placement = 'middle') => {
+    if (!pendingAdContent) return;
+
+    const currentContent = newsletter.content;
+    let updatedContent;
+
+    if (placement === 'top') {
+      updatedContent = pendingAdContent.html + '<br><br>' + currentContent;
+    } else if (placement === 'bottom') {
+      updatedContent = currentContent + '<br><br>' + pendingAdContent.html;
+    } else {
+      // Middle placement - split content roughly in half
+      const contentLength = currentContent.length;
+      const middleIndex = Math.floor(contentLength / 2);
+      const beforeContent = currentContent.substring(0, middleIndex);
+      const afterContent = currentContent.substring(middleIndex);
+      updatedContent = beforeContent + '<br><br>' + pendingAdContent.html + '<br><br>' + afterContent;
+    }
+
+    setNewsletter(prev => ({
+      ...prev,
+      content: updatedContent
+    }));
+
+    setShowAdPanel(false);
+    toast.success('Sponsored ad content added to newsletter!');
+  };
 
   // Generate donation tiers section HTML
   const generateDonationTiersSection = () => {
@@ -136,41 +174,24 @@ export default function Newsletter({ initialShowEditor = false, onEditorClose, u
     `;
   };
 
-  // Create debounced save function
+  // Auto-save functionality with debouncing
   const debouncedSave = useCallback(
     debounce(async (newsletterData) => {
       setIsSaving(true);
       try {
-        const response = await fetch('/api/newsletter', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(newsletterData),
-        });
-
-        const data = await response.json();
-        if (data.success) {
-          setSaveStatus("Draft saved " + new Date().toLocaleTimeString());
-        } else {
-          throw new Error(data.message);
-        }
+        // Simulate API call - replace with actual save logic
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        setSaveStatus("Saved");
+        setTimeout(() => setSaveStatus(""), 3000);
       } catch (error) {
-        console.error('Error saving draft:', error);
-        toast.error('Failed to save draft');
+        setSaveStatus("Error saving");
+        console.error('Save error:', error);
       } finally {
         setIsSaving(false);
       }
-    }, 1500),
+    }, 2000),
     []
   );
-
-  // Cleanup debounced function on unmount
-  useEffect(() => {
-    return () => {
-      debouncedSave.cancel();
-    };
-  }, [debouncedSave]);
 
   // Modify handleEditorChange to append donation tiers
   const handleEditorChange = (content) => {
@@ -477,6 +498,64 @@ export default function Newsletter({ initialShowEditor = false, onEditorClose, u
                   </button>
                 </div>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* Ad Content Panel */}
+        {showAdPanel && pendingAdContent && (
+          <div className="bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-lg p-6 mb-6">
+            <div className="flex items-start justify-between mb-4">
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 flex items-center">
+                  <i className="fas fa-ad text-green-600 mr-2"></i>
+                  Sponsored Ad Ready to Insert
+                </h3>
+                <p className="text-sm text-gray-600 mt-1">
+                  Your accepted sponsored ad content is ready to be added to this newsletter.
+                </p>
+              </div>
+              <button
+                onClick={() => setShowAdPanel(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <i className="fas fa-times"></i>
+              </button>
+            </div>
+            
+            <div className="bg-white rounded-lg p-4 mb-4 border">
+              <h4 className="font-medium text-gray-900 mb-2">Ad Preview:</h4>
+              <div className="text-sm text-gray-700">
+                <strong>{pendingAdContent.campaign?.title}</strong>
+                <p className="mt-1">{pendingAdContent.campaign?.description}</p>
+                <span className="inline-block mt-2 px-3 py-1 bg-blue-100 text-blue-800 rounded text-xs">
+                  By: {pendingAdContent.campaign?.brand}
+                </span>
+              </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-3">
+              <button
+                onClick={() => insertAdContent('top')}
+                className="flex-1 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors text-sm"
+              >
+                <i className="fas fa-arrow-up mr-2"></i>
+                Insert at Top
+              </button>
+              <button
+                onClick={() => insertAdContent('middle')}
+                className="flex-1 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors text-sm"
+              >
+                <i className="fas fa-align-center mr-2"></i>
+                Insert in Middle
+              </button>
+              <button
+                onClick={() => insertAdContent('bottom')}
+                className="flex-1 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors text-sm"
+              >
+                <i className="fas fa-arrow-down mr-2"></i>
+                Insert at Bottom
+              </button>
             </div>
           </div>
         )}

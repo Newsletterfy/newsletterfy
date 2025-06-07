@@ -20,8 +20,8 @@ export default function DigitalProducts({ digitalProducts = [], onClose }) {
   // Calculate total sales and revenue
   const totalSales = digitalProducts.reduce((sum, product) => sum + product.sales, 0);
   const totalRevenue = digitalProducts.reduce((sum, product) => sum + product.revenue, 0);
-  const platformFee = totalRevenue * 0.1; // 10% platform fee
-  const creatorRevenue = totalRevenue * 0.9; // 90% creator revenue
+  const platformFee = totalRevenue * 0.2; // 20% platform fee
+  const creatorRevenue = totalRevenue * 0.8; // 80% creator revenue
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -53,9 +53,9 @@ export default function DigitalProducts({ digitalProducts = [], onClose }) {
     const file = e.target.files[0];
     if (!file) return;
 
-    const maxSize = 100 * 1024 * 1024; // 100MB limit
+    const maxSize = 5 * 1024 * 1024 * 1024; // 5GB limit
     if (file.size > maxSize) {
-      toast.error('File size must be less than 100MB');
+      toast.error('File size must be less than 5GB');
       return;
     }
 
@@ -184,7 +184,7 @@ export default function DigitalProducts({ digitalProducts = [], onClose }) {
             <p className="text-2xl font-bold text-green-600">${totalRevenue.toFixed(2)}</p>
           </div>
           <div className="bg-white p-4 rounded-lg shadow-sm">
-            <p className="text-sm text-gray-500">Your Revenue (90%)</p>
+            <p className="text-sm text-gray-500">Your Revenue (80%)</p>
             <p className="text-2xl font-bold text-purple-600">${creatorRevenue.toFixed(2)}</p>
           </div>
         </div>
@@ -402,13 +402,13 @@ export default function DigitalProducts({ digitalProducts = [], onClose }) {
           <div className="bg-white p-4 rounded-lg shadow-sm">
             <h5 className="font-medium text-gray-900 mb-2">Revenue Share</h5>
             <p className="text-sm text-gray-600">
-              Earn 90% of all sales revenue. Newsletterfy takes a 10% platform fee to cover payment processing and hosting costs.
+              Earn 80% of all sales revenue. Newsletterfy takes a 20% platform fee to cover payment processing and hosting costs.
             </p>
             <div className="mt-2 flex items-center space-x-4">
               <div className="flex-1 bg-gray-200 rounded-full h-2">
-                <div className="bg-green-500 h-2 rounded-full" style={{ width: '90%' }}></div>
+                <div className="bg-green-500 h-2 rounded-full" style={{ width: '80%' }}></div>
               </div>
-              <span className="text-sm font-medium text-gray-600">90%</span>
+              <span className="text-sm font-medium text-gray-600">80%</span>
             </div>
           </div>
           <div className="bg-white p-4 rounded-lg shadow-sm">

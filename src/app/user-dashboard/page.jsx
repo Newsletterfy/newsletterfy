@@ -10,6 +10,7 @@ import Funds from "./components/Funds";
 export default function UserDashboard() {
   const [activeTab, setActiveTab] = React.useState("newsletters");
   const [showNewsletterEditor, setShowNewsletterEditor] = React.useState(false);
+  const [pendingAdContent, setPendingAdContent] = React.useState(null);
 
   // Mock user data for demonstration (in a real app, this would come from auth/context)
   const mockUser = {
@@ -23,14 +24,34 @@ export default function UserDashboard() {
     setShowNewsletterEditor(true);
   };
 
+  const handlePushToNewsletter = (adContent) => {
+    setPendingAdContent(adContent);
+    // Switch to newsletter tab and open editor
+    setActiveTab("newsletters");
+    setShowNewsletterEditor(true);
+  };
+
+  const handleNewsletterEditorClose = () => {
+    setShowNewsletterEditor(false);
+    // Clear pending ad content when editor is closed
+    setPendingAdContent(null);
+  };
+
   const renderContent = () => {
     switch (activeTab) {
       case "newsletters":
-        return <Newsletter initialShowEditor={showNewsletterEditor} onEditorClose={() => setShowNewsletterEditor(false)} user={mockUser} />;
+        return (
+          <Newsletter 
+            initialShowEditor={showNewsletterEditor} 
+            onEditorClose={handleNewsletterEditorClose} 
+            user={mockUser}
+            pendingAdContent={pendingAdContent}
+          />
+        );
       case "subscribers":
         return <Subscribers />;
       case "monetization":
-        return <Monetization />;
+        return <Monetization onPushToNewsletter={handlePushToNewsletter} />;
       case "analysis":
         return <Analysis />;
       case "growth":
@@ -38,7 +59,14 @@ export default function UserDashboard() {
       case "funds":
         return <Funds />;
       default:
-        return <Newsletter initialShowEditor={showNewsletterEditor} onEditorClose={() => setShowNewsletterEditor(false)} user={mockUser} />;
+        return (
+          <Newsletter 
+            initialShowEditor={showNewsletterEditor} 
+            onEditorClose={handleNewsletterEditorClose} 
+            user={mockUser}
+            pendingAdContent={pendingAdContent}
+          />
+        );
     }
   };
 
@@ -51,9 +79,15 @@ export default function UserDashboard() {
             <div>
               <h1 className="text-4xl font-bold gradient-text mb-2">Dashboard</h1>
               <p className="text-gray-600">Welcome back to your newsletter command center</p>
-        </div>
-                    <div className="flex items-center space-x-4">
-                  <button
+            </div>
+            <div className="flex items-center space-x-4">
+              {pendingAdContent && (
+                <div className="bg-green-100 border border-green-400 text-green-700 px-3 py-2 rounded-lg text-sm flex items-center">
+                  <i className="fas fa-ad mr-2"></i>
+                  Ad content ready for newsletter
+                </div>
+              )}
+              <button
                 onClick={handleNewNewsletter}
                 className="button-primary inline-flex items-center"
               >
@@ -71,9 +105,9 @@ export default function UserDashboard() {
                   />
                 </svg>
                 Write Newsletter
-                  </button>
-                    </div>
-                    </div>
+              </button>
+            </div>
+          </div>
 
           {/* Quick Stats */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">

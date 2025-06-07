@@ -102,12 +102,12 @@ export async function GET(req) {
 
     // Calculate platform fees
     const fees = platformFees.data || {
-      sponsored_ads_fee: 5,
-      cross_promotions_fee: 3,
-      subscription_tiers_fee: 5,
-      donations_fee: 2.5,
-      digital_products_fee: 8,
-      affiliate_program_fee: 3
+      sponsored_ads_fee: 20,
+      cross_promotions_fee: 20,
+      subscription_tiers_fee: 20,
+      donations_fee: 20,
+      digital_products_fee: 20,
+      affiliate_program_fee: 20
     };
 
     const platformFeeAmount = 

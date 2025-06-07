@@ -169,7 +169,7 @@ export default function TipsAndDonations({ onClose }) {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-green-600">${analytics.userShare.toFixed(2)}</div>
-              <p className="text-xs text-muted-foreground">90% of total donations</p>
+              <p className="text-xs text-muted-foreground">80% of total donations</p>
             </CardContent>
           </Card>
           <Card>
@@ -324,7 +324,7 @@ export default function TipsAndDonations({ onClose }) {
                         {new Date(donation.created_at).toLocaleDateString()}
                       </p>
                       <p className="text-sm font-medium text-green-600 mt-1">
-                        Your share: ${(donation.amount * 0.9).toFixed(2)}
+                        Your share: ${(donation.amount * 0.8).toFixed(2)}
                       </p>
                     </div>
                   </CardContent>

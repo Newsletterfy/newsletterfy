@@ -23,8 +23,8 @@ export async function GET(req) {
     // Calculate analytics
     const totalDonations = donations.length;
     const totalAmount = donations.reduce((sum, d) => sum + d.amount, 0);
-    const userShare = totalAmount * 0.9; // 90% to creator
-    const platformFee = totalAmount * 0.1; // 10% platform fee
+    const userShare = totalAmount * 0.8; // 80% to creator
+    const platformFee = totalAmount * 0.2; // 20% platform fee
     const uniqueDonors = new Set(donations.map(d => d.donor_id)).size;
 
     return NextResponse.json({
@@ -61,8 +61,8 @@ export async function POST(req) {
     }
 
     // Calculate shares
-    const userShare = amount * 0.9; // 90% to creator
-    const platformFee = amount * 0.1; // 10% platform fee
+    const userShare = amount * 0.8; // 80% to creator
+    const platformFee = amount * 0.2; // 20% platform fee
 
     const { data: donation, error } = await supabase
       .from('donations')

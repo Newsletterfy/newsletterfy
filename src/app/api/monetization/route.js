@@ -89,22 +89,22 @@ export async function GET(req) {
       paid_subscriptions: {
         subscribers: subscriptionTiers?.reduce((acc, tier) => acc + tier.subscribers, 0) || 0,
         total_revenue: subscriptionTiers?.reduce((acc, tier) => acc + tier.revenue, 0) || 0,
-        platform_fee: 10
+        platform_fee: 20
       },
       tips_and_donations: {
         supporters: donations?.length || 0,
         total_tips: donations?.reduce((acc, donation) => acc + donation.amount, 0) || 0,
-        platform_fee: 10
+        platform_fee: 20
       },
       digital_products: {
         products_sold: digitalProducts?.reduce((acc, product) => acc + product.sales, 0) || 0,
         total_sales: digitalProducts?.reduce((acc, product) => acc + product.revenue, 0) || 0,
-        platform_fee: 10
+        platform_fee: 20
       },
       affiliate_program: {
         referrals: affiliateReferrals?.length || 0,
         total_commission: affiliateReferrals?.reduce((acc, ref) => acc + ref.commission, 0) || 0,
-        platform_fee: 50
+        platform_fee: 20
       }
     };
 

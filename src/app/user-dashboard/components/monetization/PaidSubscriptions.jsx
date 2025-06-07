@@ -185,7 +185,7 @@ export default function PaidSubscriptions({ onClose }) {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-green-600">${analytics.userShare.toFixed(2)}</div>
-              <p className="text-xs text-muted-foreground">90% of subscription revenue</p>
+              <p className="text-xs text-muted-foreground">80% of subscription revenue</p>
             </CardContent>
           </Card>
           <Card>
@@ -358,7 +358,7 @@ export default function PaidSubscriptions({ onClose }) {
                         {new Date(subscription.created_at).toLocaleDateString()}
                       </p>
                       <p className="text-sm font-medium text-green-600 mt-1">
-                        Your share: ${(subscription.amount * 0.9).toFixed(2)}
+                        Your share: ${(subscription.amount * 0.8).toFixed(2)}
                       </p>
                     </div>
                   </CardContent>

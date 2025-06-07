@@ -2,12 +2,26 @@ import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs';
 import { NextResponse } from 'next/server';
 
 export async function middleware(req) {
-  // Skip auth check if explicitly disabled
-  if (process.env.NEXT_PUBLIC_DISABLE_AUTH === 'true') {
-    return NextResponse.next();
+  const res = NextResponse.next();
+  
+  // Check if Supabase environment variables are properly configured
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  
+  // If Supabase is not configured, redirect protected routes to signin
+  if (!supabaseUrl || !supabaseAnonKey || supabaseUrl.includes('your_supabase_project_url') || supabaseAnonKey.includes('your_supabase_anon_key')) {
+    console.warn('Supabase not configured. Authentication middleware disabled.');
+    
+    // If trying to access protected routes without proper Supabase config, redirect to signin
+    if (req.nextUrl.pathname.startsWith('/user-dashboard') ||
+        req.nextUrl.pathname.startsWith('/api/monetization')) {
+      return NextResponse.redirect(new URL('/auth/signin', req.url));
+    }
+    
+    return res;
   }
 
-  const res = NextResponse.next();
+  // If Supabase is configured, proceed with normal authentication
   const supabase = createMiddlewareClient({ req, res });
 
   const {

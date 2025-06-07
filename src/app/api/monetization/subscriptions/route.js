@@ -45,8 +45,8 @@ export async function GET() {
     const analytics = {
       totalSubscribers: analyticsData.length,
       monthlyRevenue: analyticsData.reduce((sum, sub) => sum + parseFloat(sub.amount), 0),
-      userShare: analyticsData.reduce((sum, sub) => sum + parseFloat(sub.amount) * 0.9, 0),
-      platformFee: analyticsData.reduce((sum, sub) => sum + parseFloat(sub.amount) * 0.1, 0),
+      userShare: analyticsData.reduce((sum, sub) => sum + parseFloat(sub.amount) * 0.8, 0),
+      platformFee: analyticsData.reduce((sum, sub) => sum + parseFloat(sub.amount) * 0.2, 0),
       activeTiers: new Set(analyticsData.map(sub => sub.subscription_tiers.id)).size
     };
 

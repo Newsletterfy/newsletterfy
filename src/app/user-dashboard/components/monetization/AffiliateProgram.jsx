@@ -356,20 +356,20 @@ export default function AffiliateProgram({ affiliateReferrals = [], affiliateLin
           <div className="bg-white p-4 rounded-lg shadow-sm">
             <h5 className="font-medium text-gray-900 mb-2">3. Commission Structure</h5>
             <p className="text-sm text-gray-600">
-              Earn 50% commission on all referred subscriptions. Commissions are paid monthly via your preferred payment method.
+              Earn 20% recurring commission on all referred Newsletterfy platform subscriptions. Commissions are paid monthly for as long as your referred users maintain their paid subscription.
             </p>
             <ul className="mt-2 space-y-1 text-sm text-gray-600">
               <li className="flex items-center">
                 <i className="fas fa-check text-green-500 mr-2"></i>
-                50% commission on all referred subscriptions
+                20% recurring commission on referred platform subscriptions
               </li>
               <li className="flex items-center">
                 <i className="fas fa-check text-green-500 mr-2"></i>
-                Monthly payouts via your preferred payment method
+                Monthly payouts for active subscriptions
               </li>
               <li className="flex items-center">
                 <i className="fas fa-check text-green-500 mr-2"></i>
-                Lifetime commissions on recurring subscriptions
+                Commission continues until subscriber cancels
               </li>
               <li className="flex items-center">
                 <i className="fas fa-check text-green-500 mr-2"></i>

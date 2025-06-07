@@ -15,12 +15,12 @@ BEGIN
     IF fees IS NULL THEN
         -- Use default fees if not configured
         fees := ROW(
-            5.0, -- sponsored_ads_fee
-            3.0, -- cross_promotions_fee
-            5.0, -- subscription_tiers_fee
-            2.5, -- donations_fee
-            8.0, -- digital_products_fee
-            3.0  -- affiliate_program_fee
+            20.0, -- sponsored_ads_fee
+            20.0, -- cross_promotions_fee
+            20.0, -- subscription_tiers_fee
+            20.0, -- donations_fee
+            20.0, -- digital_products_fee
+            20.0  -- affiliate_program_fee
         );
     END IF;
 

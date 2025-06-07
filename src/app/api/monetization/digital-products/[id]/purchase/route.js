@@ -29,9 +29,9 @@ export async function POST(req, { params }) {
       return NextResponse.json({ error: 'Product is not available for purchase' }, { status: 400 });
     }
 
-    // Calculate commission (90% to creator, 10% to platform)
-    const commission = product.price * 0.9;
-    const platformFee = product.price * 0.1;
+    // Calculate commission (80% to creator, 20% to platform)
+    const commission = product.price * 0.8;
+    const platformFee = product.price * 0.2;
 
     // Create purchase record
     const { data: purchase, error: purchaseError } = await supabase

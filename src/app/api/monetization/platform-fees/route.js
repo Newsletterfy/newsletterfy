@@ -24,12 +24,12 @@ export async function GET(req) {
     // If no configuration exists, return default values
     if (!data) {
       return NextResponse.json({
-        sponsored_ads_fee: 5, // 5% platform fee
-        cross_promotions_fee: 3,
-        subscription_tiers_fee: 5,
-        donations_fee: 2.5,
-        digital_products_fee: 8,
-        affiliate_program_fee: 3,
+        sponsored_ads_fee: 20, // 20% platform fee
+        cross_promotions_fee: 20,
+        subscription_tiers_fee: 20,
+        donations_fee: 20,
+        digital_products_fee: 20,
+        affiliate_program_fee: 20,
         payout_threshold: 100, // Minimum amount for payout
         payout_method: 'bank_transfer',
         payment_details: null
