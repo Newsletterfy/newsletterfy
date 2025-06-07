@@ -302,7 +302,7 @@ export default function SponsoredAdCampaigns({ initialShowEditor = false, onEdit
               </label>
               <div className="mt-1">
                 <Editor
-                  apiKey={process.env.NEXT_PUBLIC_TINYMCE_API_KEY}
+                  apiKey={process.env.NEXT_PUBLIC_TINYMCE_API_KEY || 'no-api-key'}
                   init={{
                     height: 500,
                     menubar: false,

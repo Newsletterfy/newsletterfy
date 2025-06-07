@@ -170,7 +170,7 @@ export default function NewsletterTemplates() {
             <div>
               <label className="block font-medium mb-2">Content</label>
               <Editor
-                apiKey={process.env.NEXT_PUBLIC_TINYMCE_API_KEY}
+                apiKey={process.env.NEXT_PUBLIC_TINYMCE_API_KEY || 'no-api-key'}
                 value={currentTemplate.content}
                 onEditorChange={(content) =>
                   setCurrentTemplate((prev) => ({ ...prev, content }))

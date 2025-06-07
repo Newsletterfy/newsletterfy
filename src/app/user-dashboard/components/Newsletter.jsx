@@ -634,7 +634,7 @@ export default function Newsletter({ initialShowEditor = false, onEditorClose, u
                 Newsletter Content
               </label>
               <Editor
-                apiKey={process.env.NEXT_PUBLIC_TINYMCE_API_KEY}
+                apiKey="qagffr3pkuv17a8on1afax661irst1hbr4e6tbv888sz91jc"
                 init={{
                   height: 500,
                   menubar: true,
@@ -678,7 +678,9 @@ export default function Newsletter({ initialShowEditor = false, onEditorClose, u
                   contextmenu: 'link image table',
                   automatic_uploads: true,
                   file_picker_types: 'image',
-                  promotion: false
+                  promotion: false,
+                  branding: false,
+                  branding: false
                 }}
                 onEditorChange={handleEditorChange}
                 value={newsletter.content}
