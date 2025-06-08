@@ -1,5 +1,6 @@
 "use client";
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import Newsletter from "./components/Newsletter";
 import Subscribers from "./components/Subscribers";
 import Monetization from "./components/Monetization";
@@ -14,9 +15,10 @@ export default function UserDashboard() {
 
   // Mock user data for demonstration (in a real app, this would come from auth/context)
   const mockUser = {
-    id: 1,
+    id: "550e8400-e29b-41d4-a716-446655440000",
     email: "user@example.com",
-    name: "John Doe"
+    name: "John Doe",
+    username: "johndoe"
   };
 
   const handleNewNewsletter = () => {
@@ -51,7 +53,7 @@ export default function UserDashboard() {
       case "subscribers":
         return <Subscribers />;
       case "monetization":
-        return <Monetization onPushToNewsletter={handlePushToNewsletter} />;
+        return <Monetization user={mockUser} onPushToNewsletter={handlePushToNewsletter} />;
       case "analysis":
         return <Analysis />;
       case "growth":

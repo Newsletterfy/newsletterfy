@@ -10,7 +10,7 @@ import {
   AffiliateProgram
 } from './monetization/index';
 
-export default function Monetization({ onPushToNewsletter }) {
+export default function Monetization({ user, onPushToNewsletter }) {
   const [isLoading, setIsLoading] = useState(true);
   const [activeSection, setActiveSection] = useState(null);
   const [sponsoredAds, setSponsoredAds] = useState([]);
@@ -185,6 +185,7 @@ export default function Monetization({ onPushToNewsletter }) {
         />
       ) : activeSection === 'tips-donations' ? (
         <TipsAndDonations 
+          user={user}
           donations={donations}
           donationTiers={donationTiers}
           onClose={() => setActiveSection(null)} 

@@ -22,6 +22,22 @@ export async function GET(request, { params }) {
     const { data: creatorData, error: creatorError } = await creatorQuery.single();
 
     if (creatorError || !creatorData) {
+      // For demo purposes, if we don't find the creator, create a mock user
+      if (creator === "550e8400-e29b-41d4-a716-446655440000") {
+        const mockCreator = {
+          id: "550e8400-e29b-41d4-a716-446655440000",
+          name: "John Doe",
+          email: "user@example.com",
+          username: "johndoe"
+        };
+        
+        // Return mock data with empty tiers for demo
+        return NextResponse.json({
+          creator: mockCreator,
+          tiers: []
+        });
+      }
+      
       return NextResponse.json({ error: 'Creator not found' }, { status: 404 });
     }
 

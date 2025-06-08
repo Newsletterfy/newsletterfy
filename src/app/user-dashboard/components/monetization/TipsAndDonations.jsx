@@ -15,7 +15,7 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Plus, X } from 'lucide-react';
 
-export default function TipsAndDonations({ onClose }) {
+export default function TipsAndDonations({ user, onClose }) {
   const [loading, setLoading] = useState(true);
   const [donations, setDonations] = useState([]);
   const [analytics, setAnalytics] = useState({
@@ -158,7 +158,7 @@ export default function TipsAndDonations({ onClose }) {
               <p>Your donation system is fully set up! Supporters can visit your donation page to support you. Donation sections are automatically added to your newsletters.</p>
               <div className="mt-2">
                 <a 
-                  href={`/donate/creator`}
+                  href={`/donate/${user?.id || 'creator'}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium"
