@@ -268,7 +268,7 @@ export default function DonatePage() {
               </button>
 
               <p className="text-sm text-gray-500 text-center">
-                The creator receives 80% of your donation. Payment processing is secure.
+                Payment processing is secure.
               </p>
             </form>
           </div>
