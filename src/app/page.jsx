@@ -1255,9 +1255,9 @@ function MainComponent() {
                     What are the revenue sharing terms?
                   </h3>
                   <p className="text-gray-600">
-                    We offer competitive revenue sharing: 90% for creators on
-                    paid subscriptions, digital product sales, tips and
-                    donations and 80% on sponsored ads and cross promotions.
+                    We offer competitive revenue sharing: 80% for creators on
+                    all monetization features including paid subscriptions, digital product sales, tips and
+                    donations, sponsored ads, and cross promotions.
                     Enterprise plans can negotiate custom terms.
                   </p>
                 </div>
