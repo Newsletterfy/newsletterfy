@@ -12,10 +12,10 @@ export async function middleware(req) {
   if (!supabaseUrl || !supabaseAnonKey || supabaseUrl.includes('your_supabase_project_url') || supabaseAnonKey.includes('your_supabase_anon_key')) {
     console.warn('Supabase not configured. Authentication middleware disabled.');
     
-    // If trying to access protected routes without proper Supabase config, redirect to signin
+    // If trying to access protected routes without proper Supabase config, redirect to login
     if (req.nextUrl.pathname.startsWith('/user-dashboard') ||
         req.nextUrl.pathname.startsWith('/api/monetization')) {
-      return NextResponse.redirect(new URL('/auth/signin', req.url));
+      return NextResponse.redirect(new URL('/auth/login', req.url));
     }
     
     return res;
@@ -28,12 +28,12 @@ export async function middleware(req) {
     data: { session },
   } = await supabase.auth.getSession();
 
-  // If no session and trying to access protected route, redirect to sign in
+  // If no session and trying to access protected route, redirect to login
   if (!session && (
     req.nextUrl.pathname.startsWith('/user-dashboard') ||
     req.nextUrl.pathname.startsWith('/api/monetization')
   )) {
-    return NextResponse.redirect(new URL('/auth/signin', req.url));
+    return NextResponse.redirect(new URL('/auth/login', req.url));
   }
 
   // Check if this is a signup page visit with a referral code

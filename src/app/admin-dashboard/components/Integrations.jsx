@@ -25,9 +25,9 @@ export default function Integrations() {
     ],
     payment: [
       {
-        id: "stripe",
-        name: "Stripe",
-        description: "Payment processing",
+        id: "intasend",
+        name: "IntaSend",
+        description: "Payment processing with M-Pesa, Cards & Bank transfers",
         connected: true,
         icon: "credit-card",
         status: "active",

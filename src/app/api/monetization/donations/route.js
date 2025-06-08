@@ -12,23 +12,40 @@ export async function GET(req) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    // Fetch donations without the problematic join
     const { data: donations, error } = await supabase
       .from('donations')
-      .select('*, donation_tier(*)')
+      .select('*')
       .eq('recipient_id', session.user.id)
       .order('created_at', { ascending: false });
 
     if (error) throw error;
 
+    // Fetch tier information separately for donations that have a tier
+    const donationsWithTiers = await Promise.all(
+      (donations || []).map(async (donation) => {
+        if (donation.donation_tier_id) {
+          const { data: tier } = await supabase
+            .from('donation_tiers')
+            .select('id, name, amount, description, perks')
+            .eq('id', donation.donation_tier_id)
+            .single();
+          
+          return { ...donation, donation_tier: tier };
+        }
+        return { ...donation, donation_tier: null };
+      })
+    );
+
     // Calculate analytics
-    const totalDonations = donations.length;
-    const totalAmount = donations.reduce((sum, d) => sum + d.amount, 0);
+    const totalDonations = donations?.length || 0;
+    const totalAmount = donations?.reduce((sum, d) => sum + (parseFloat(d.amount) || 0), 0) || 0;
     const userShare = totalAmount * 0.8; // 80% to creator
     const platformFee = totalAmount * 0.2; // 20% platform fee
-    const uniqueDonors = new Set(donations.map(d => d.donor_id)).size;
+    const uniqueDonors = new Set(donations?.map(d => d.donor_id).filter(id => id)).size || 0;
 
     return NextResponse.json({
-      donations,
+      donations: donationsWithTiers,
       analytics: {
         totalDonations,
         totalAmount,
@@ -76,91 +93,41 @@ export async function POST(req) {
         donation_tier_id: tier_id,
         status: 'completed'
       }])
-      .select('*, donation_tier(*)')
+      .select('*')
       .single();
 
     if (error) throw error;
 
-    // Update recipient's total donations
-    await supabase.rpc('update_user_donation_stats', {
-      user_id: recipient_id,
-      donation_amount: amount
-    });
+    // Fetch tier information if tier_id is provided
+    let donationTier = null;
+    if (tier_id) {
+      const { data: tier } = await supabase
+        .from('donation_tiers')
+        .select('id, name, amount, description, perks')
+        .eq('id', tier_id)
+        .single();
+      donationTier = tier;
+    }
 
-    return NextResponse.json({ donation });
+    // Update recipient's total donations
+    try {
+      await supabase.rpc('update_user_donation_stats', {
+        user_id: recipient_id,
+        donation_amount: amount
+      });
+    } catch (statsError) {
+      console.error('Error updating donation stats:', statsError);
+      // Don't fail the whole transaction for stats update
+    }
+
+    return NextResponse.json({ 
+      donation: { 
+        ...donation, 
+        donation_tier: donationTier 
+      } 
+    });
   } catch (error) {
     console.error('Error processing donation:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
-  }
-}
-
-// Update a donation
-export async function PATCH(req) {
-  try {
-    const { session, error: authError } = await checkAuth();
-    const supabase = getSupabaseClient();
-
-    if (authError || !session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const body = await req.json();
-    const { id, ...updateData } = body;
-
-    const { data, error } = await supabase
-      .from('donations')
-      .update(updateData)
-      .eq('id', id)
-      .eq('user_id', session.user.id)
-      .select()
-      .single();
-
-    if (error) throw error;
-
-    return NextResponse.json(data);
-  } catch (error) {
-    console.error('Error updating donation:', error);
-    return NextResponse.json(
-      { error: 'Failed to update donation' },
-      { status: 500 }
-    );
-  }
-}
-
-// Delete a donation
-export async function DELETE(req) {
-  try {
-    const { session, error: authError } = await checkAuth();
-    const supabase = getSupabaseClient();
-
-    if (authError || !session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const { searchParams } = new URL(req.url);
-    const id = searchParams.get('id');
-
-    if (!id) {
-      return NextResponse.json(
-        { error: 'Donation ID is required' },
-        { status: 400 }
-      );
-    }
-
-    const { error } = await supabase
-      .from('donations')
-      .delete()
-      .eq('id', id)
-      .eq('user_id', session.user.id);
-
-    if (error) throw error;
-
-    return NextResponse.json({ message: 'Donation deleted successfully' });
-  } catch (error) {
-    console.error('Error deleting donation:', error);
-    return NextResponse.json(
-      { error: 'Failed to delete donation' },
-      { status: 500 }
-    );
   }
 } 

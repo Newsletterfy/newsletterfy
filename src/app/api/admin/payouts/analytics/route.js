@@ -33,7 +33,7 @@ const MOCK_ANALYTICS = {
   method_distribution: {
     bank_transfer: 500,
     paypal: 400,
-    stripe: 250,
+    intasend: 250,
     crypto: 100
   },
   time_series: generateMockTimeSeriesData(),

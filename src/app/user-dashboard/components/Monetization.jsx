@@ -9,6 +9,7 @@ import {
   DigitalProducts,
   AffiliateProgram
 } from './monetization/index';
+import { PlanGuard, UpgradePrompt, UsageWarning, PlanBadge } from './PlanGuard';
 
 export default function Monetization({ user, onPushToNewsletter }) {
   const [isLoading, setIsLoading] = useState(true);

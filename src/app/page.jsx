@@ -1,5 +1,11 @@
 "use client";
 import React from "react";
+import { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+);
 
 function MainComponent() {
   const [currentView, setCurrentView] = React.useState("landing");
@@ -124,15 +130,7 @@ function MainComponent() {
     subscribers: 1000,
     price: 29,
   });
-  const [paystackPublicKey] = React.useState(
-    "pk_live_645f7078a797c3bdd91884ba8c58e1846c450d8f"
-  );
-  const [paymentAmount, setPaymentAmount] = React.useState("");
-  const [paymentEmail, setPaymentEmail] = React.useState("");
-  const [showPaymentModal, setShowPaymentModal] = React.useState(false);
-  const [paymentReference] = React.useState(
-    `ref-${Math.floor(Math.random() * 1000000000 + 1)}`
-  );
+
   const businessTiers = [
     { subscribers: 1000, price: 89 },
     { subscribers: 5000, price: 129 },
@@ -164,43 +162,7 @@ function MainComponent() {
     setSelectedProTier(tier);
   };
 
-  const handlePayment = () => {
-    if (window.PaystackPop) {
-      const handler = window.PaystackPop.setup({
-        key: paystackPublicKey,
-        email: paymentEmail,
-        amount: parseFloat(paymentAmount) * 100,
-        ref: paymentReference,
-        onClose: () => {
-          setShowPaymentModal(false);
-        },
-        callback: async (response) => {
-          setShowPaymentModal(false);
-          const verificationResponse = await fetch(
-            "/api/paystack-payment-verification",
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                reference: response.reference,
-              }),
-            }
-          );
-          const verificationData = await verificationResponse.json();
-          if (verificationData.success) {
-            alert(
-              `Payment successful! Amount: ${verificationData.data.amount}`
-            );
-          } else {
-            alert("Payment verification failed");
-          }
-        },
-      });
-      handler.openIframe();
-    }
-  };
+
 
   const scrollToSection = (id) => {
     const element = document.getElementById(id);
@@ -217,13 +179,55 @@ function MainComponent() {
   const handleGetStarted = () => {
     scrollToSection("pricing");
   };
-  const handleProPlanClick = () => {
-    setPaymentAmount(selectedProTier.price.toString());
-    setShowPaymentModal(true);
+  const checkAuthAndProceed = async (planData) => {
+    try {
+      // For now, always redirect to signup to ensure proper flow
+      // This ensures new users go through signup first
+      const planParams = new URLSearchParams({
+        plan: planData.type,
+        tier: planData.subscribers.toString(),
+        price: planData.price.toString()
+      });
+      localStorage.setItem('selectedPlan', JSON.stringify(planData));
+      window.location.href = `/auth/signup?${planParams.toString()}`;
+    } catch (error) {
+      console.error('Auth check error:', error);
+      // Fallback to signup page for any errors
+      const planParams = new URLSearchParams({
+        plan: planData.type,
+        tier: planData.subscribers.toString(),
+        price: planData.price.toString()
+      });
+      localStorage.setItem('selectedPlan', JSON.stringify(planData));
+      window.location.href = `/auth/signup?${planParams.toString()}`;
+    }
   };
+
+  const handleProPlanClick = () => {
+    const planData = {
+      type: 'Pro',
+      subscribers: selectedProTier.subscribers,
+      price: selectedProTier.price
+    };
+    checkAuthAndProceed(planData);
+  };
+
   const handleBusinessPlanClick = () => {
-    setPaymentAmount(selectedBusinessTier.price.toString());
-    setShowPaymentModal(true);
+    const planData = {
+      type: 'Business', 
+      subscribers: selectedBusinessTier.subscribers,
+      price: selectedBusinessTier.price
+    };
+    checkAuthAndProceed(planData);
+  };
+
+  const handleFreePlanClick = () => {
+    const planData = {
+      type: 'Free',
+      subscribers: 1000, // Default for free plan
+      price: 0
+    };
+    checkAuthAndProceed(planData);
   };
   const [ads, setAds] = React.useState([]);
   const [newAd, setNewAd] = React.useState({
@@ -924,7 +928,10 @@ function MainComponent() {
                     </li>
                   </ul>
                 </div>
-                <button className="w-full bg-[#06b6d4] text-[#ffffff] px-4 py-2 rounded hover:bg-[#0891b2] transition duration-300">
+                <button 
+                  onClick={handleFreePlanClick}
+                  className="w-full bg-[#06b6d4] text-[#ffffff] px-4 py-2 rounded hover:bg-[#0891b2] transition duration-300"
+                >
                   Choose Free
                 </button>
               </div>
@@ -1110,7 +1117,10 @@ function MainComponent() {
                   <h3 className="text-2xl font-bold mb-2 text-[#1f2937]">
                     Enterprise
                   </h3>
-                  <p className="text-4xl font-bold mb-4 text-[#1f2937]"></p>
+                  <div className="mb-4">
+                    <p className="text-2xl font-bold text-[#1f2937]">Custom Pricing</p>
+                    <p className="text-sm text-[#6b7280]">Contact our sales team</p>
+                  </div>
                   <ul className="text-left space-y-2 mb-6">
                     <li>
                       <i className="fas fa-check text-[#16a34a] mr-2"></i>
@@ -1174,9 +1184,14 @@ function MainComponent() {
                     </li>
                   </ul>
                 </div>
-                <button className="w-full bg-[#06b6d4] text-[#ffffff] px-4 py-2 rounded hover:bg-[#0891b2] transition duration-300">
+                <a
+                  href="https://calendly.com/newsletterfy/meeting"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block w-full bg-[#06b6d4] text-[#ffffff] px-4 py-2 rounded hover:bg-[#0891b2] transition duration-300 text-center"
+                >
                   Contact Sales
-                </button>
+                </a>
               </div>
             </div>
           </section>
@@ -1298,8 +1313,8 @@ function MainComponent() {
                     How do I get paid?
                   </h3>
                   <p className="text-gray-600">
-                    Payments are processed automatically every month via Stripe
-                    or PayPal. We support multiple currencies and provide
+                    Payments are processed automatically every month via IntaSend
+                    supporting M-Pesa, cards, and bank transfers. We support multiple currencies and provide
                     detailed earnings reports for easy accounting.
                   </p>
                 </div>
@@ -1328,8 +1343,8 @@ function MainComponent() {
                     What payment methods do you accept?
                   </h3>
                   <p className="text-gray-600">
-                    We accept all major credit cards, PayPal, and bank
-                    transfers. For premium plans, we also support custom payment
+                    We accept all major credit cards, M-Pesa mobile money, and bank
+                    transfers via IntaSend. For premium plans, we also support custom payment
                     gateways.
                   </p>
                 </div>
@@ -1577,6 +1592,8 @@ function MainComponent() {
               </div>
             </div>
           </footer>
+
+
         </div>
       </div>
     </div>

@@ -1,54 +1,52 @@
 import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/lib/auth';
-import prisma from '@/lib/prisma';
+import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
+import { cookies } from 'next/headers';
 
 // Get user's funds data
 export async function GET(req) {
   try {
-    const session = await getServerSession(authOptions);
+    const supabase = createRouteHandlerClient({ cookies });
+    const { data: { session } } = await supabase.auth.getSession();
+    
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const userId = session.user.id;
 
-    // Get user's balance stats
-    const balanceStats = await prisma.user.findUnique({
-      where: { id: userId },
-      select: {
-        availableBalance: true,
-        pendingBalance: true,
-        totalEarnings: true,
-        withdrawnAmount: true,
-      },
-    });
+    // Get user's balance stats from Supabase
+    const { data: balanceStats, error: balanceError } = await supabase
+      .from('user_funds')
+      .select('balance, pending_balance, total_earned, total_spent')
+      .eq('user_id', userId)
+      .single();
 
-    // Get user's transactions
-    const transactions = await prisma.transaction.findMany({
-      where: { userId },
-      orderBy: { createdAt: 'desc' },
-      take: 50,
-      include: {
-        newsletter: {
-          select: { title: true },
-        },
-      },
-    });
+    if (balanceError && balanceError.code !== 'PGRST116') {
+      throw balanceError;
+    }
 
-    // Get user's withdrawal methods
-    const withdrawalMethods = await prisma.withdrawalMethod.findMany({
-      where: { userId },
-      orderBy: { createdAt: 'desc' },
-    });
+    // Get user's transactions from payment_transactions table
+    const { data: transactions, error: transactionsError } = await supabase
+      .from('payment_transactions')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+      .limit(50);
 
+    if (transactionsError) {
+      throw transactionsError;
+    }
+
+    // Return consolidated funds data
     return NextResponse.json({
-      balanceStats,
-      transactions: transactions.map(t => ({
-        ...t,
-        newsletter: t.newsletter?.title || null,
-      })),
-      withdrawalMethods,
+      balanceStats: balanceStats || {
+        balance: 0,
+        pending_balance: 0,
+        total_earned: 0,
+        total_spent: 0
+      },
+      transactions: transactions || [],
+      withdrawalMethods: [], // This would need to be implemented in Supabase
     });
   } catch (error) {
     console.error('Error fetching funds data:', error);

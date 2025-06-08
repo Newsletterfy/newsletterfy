@@ -353,30 +353,39 @@ export default function Funds() {
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Payment Method
                   </label>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-3 gap-4">
                     <button
                       type="button"
                       className={`flex items-center justify-center p-4 border rounded-lg ${
-                        paymentMethod === 'credit_card'
+                        paymentMethod === 'card'
                           ? 'border-cyan-500 bg-cyan-50 text-cyan-700'
                           : 'border-gray-300 hover:bg-gray-50'
                       }`}
-                      onClick={() => setPaymentMethod('credit_card')}
+                      onClick={() => setPaymentMethod('card')}
                     >
-                      <i className="fas fa-credit-card mr-2"></i>
-                      Credit Card
+                      💳 Card
                     </button>
                     <button
                       type="button"
                       className={`flex items-center justify-center p-4 border rounded-lg ${
-                        paymentMethod === 'paypal'
+                        paymentMethod === 'mpesa'
                           ? 'border-cyan-500 bg-cyan-50 text-cyan-700'
                           : 'border-gray-300 hover:bg-gray-50'
                       }`}
-                      onClick={() => setPaymentMethod('paypal')}
+                      onClick={() => setPaymentMethod('mpesa')}
                     >
-                      <i className="fab fa-paypal mr-2"></i>
-                      PayPal
+                      📱 M-Pesa
+                    </button>
+                    <button
+                      type="button"
+                      className={`flex items-center justify-center p-4 border rounded-lg ${
+                        paymentMethod === 'bank'
+                          ? 'border-cyan-500 bg-cyan-50 text-cyan-700'
+                          : 'border-gray-300 hover:bg-gray-50'
+                      }`}
+                      onClick={() => setPaymentMethod('bank')}
+                    >
+                      🏦 Bank
                     </button>
                   </div>
                 </div>

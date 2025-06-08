@@ -7,7 +7,7 @@ const MOCK_PAYOUTS = Array(50).fill(null).map((_, index) => ({
   user_id: `user_${Math.floor(Math.random() * 1000)}`,
   amount: Math.floor(Math.random() * 10000) / 100,
   status: ['pending', 'processing', 'completed', 'failed'][Math.floor(Math.random() * 4)],
-  payout_method: ['bank_transfer', 'paypal', 'stripe', 'crypto'][Math.floor(Math.random() * 4)],
+  payout_method: ['bank_transfer', 'mpesa', 'intasend', 'crypto'][Math.floor(Math.random() * 4)],
   created_at: new Date(Date.now() - Math.random() * 90 * 24 * 60 * 60 * 1000).toISOString(),
   processed_at: null,
   reference: `REF${Math.random().toString(36).substring(2, 10).toUpperCase()}`,

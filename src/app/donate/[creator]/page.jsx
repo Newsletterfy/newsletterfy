@@ -13,6 +13,8 @@ export default function DonatePage() {
   const [message, setMessage] = useState('');
   const [donorName, setDonorName] = useState('');
   const [donorEmail, setDonorEmail] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState('card');
   const [processing, setProcessing] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
 
@@ -54,6 +56,10 @@ export default function DonatePage() {
         throw new Error('Please enter your name and email');
       }
 
+      if (paymentMethod === 'mpesa' && !phoneNumber) {
+        throw new Error('Please enter your M-Pesa phone number');
+      }
+
       const response = await fetch('/api/donations/process', {
         method: 'POST',
         headers: {
@@ -65,7 +71,9 @@ export default function DonatePage() {
           tier_id: selectedTier?.id,
           message,
           donor_name: donorName,
-          donor_email: donorEmail
+          donor_email: donorEmail,
+          phone_number: phoneNumber,
+          payment_method: paymentMethod
         }),
       });
 
@@ -75,8 +83,18 @@ export default function DonatePage() {
         throw new Error(data.error);
       }
 
-      setShowSuccess(true);
-      toast.success('Thank you for your donation!');
+      // Handle different payment methods
+      if (data.payment_method === 'mpesa') {
+        toast.success(data.message);
+        setShowSuccess(true);
+      } else if (data.checkout_url) {
+        // Redirect to IntaSend checkout
+        window.location.href = data.checkout_url;
+      } else {
+        setShowSuccess(true);
+        toast.success('Thank you for your donation!');
+      }
+      
     } catch (error) {
       console.error('Donation error:', error);
       toast.error(error.message || 'Failed to process donation');
@@ -212,6 +230,77 @@ export default function DonatePage() {
                 </div>
               </div>
 
+              {/* Payment Method Selection */}
+              <div>
+                <h3 className="text-lg font-semibold mb-4">Choose Payment Method</h3>
+                <div className="grid gap-3 md:grid-cols-3">
+                  <div
+                    className={`p-4 border rounded-lg cursor-pointer transition-colors ${
+                      paymentMethod === 'card'
+                        ? 'border-blue-500 bg-blue-50'
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                    onClick={() => setPaymentMethod('card')}
+                  >
+                    <div className="text-center">
+                      <div className="text-2xl mb-2">💳</div>
+                      <h4 className="font-medium">Credit/Debit Card</h4>
+                      <p className="text-sm text-gray-600">Visa, Mastercard, etc.</p>
+                    </div>
+                  </div>
+                  
+                  <div
+                    className={`p-4 border rounded-lg cursor-pointer transition-colors ${
+                      paymentMethod === 'mpesa'
+                        ? 'border-green-500 bg-green-50'
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                    onClick={() => setPaymentMethod('mpesa')}
+                  >
+                    <div className="text-center">
+                      <div className="text-2xl mb-2">📱</div>
+                      <h4 className="font-medium">M-Pesa</h4>
+                      <p className="text-sm text-gray-600">Mobile money</p>
+                    </div>
+                  </div>
+                  
+                  <div
+                    className={`p-4 border rounded-lg cursor-pointer transition-colors ${
+                      paymentMethod === 'bank'
+                        ? 'border-purple-500 bg-purple-50'
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                    onClick={() => setPaymentMethod('bank')}
+                  >
+                    <div className="text-center">
+                      <div className="text-2xl mb-2">🏦</div>
+                      <h4 className="font-medium">Bank Transfer</h4>
+                      <p className="text-sm text-gray-600">Direct bank payment</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Phone Number for M-Pesa */}
+                {paymentMethod === 'mpesa' && (
+                  <div className="mt-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      M-Pesa Phone Number *
+                    </label>
+                    <input
+                      type="tel"
+                      required
+                      value={phoneNumber}
+                      onChange={(e) => setPhoneNumber(e.target.value)}
+                      placeholder="254XXXXXXXXX"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    />
+                    <p className="text-sm text-gray-500 mt-1">
+                      Enter your phone number in international format (e.g., 254712345678)
+                    </p>
+                  </div>
+                )}
+              </div>
+
               {/* Donor Information */}
               <div className="grid gap-4 md:grid-cols-2">
                 <div>
@@ -268,7 +357,7 @@ export default function DonatePage() {
               </button>
 
               <p className="text-sm text-gray-500 text-center">
-                Payment processing is secure.
+                Payment processing powered by IntaSend - Supporting Card, M-Pesa & Bank payments
               </p>
             </form>
           </div>
@@ -281,7 +370,7 @@ export default function DonatePage() {
           </p>
           <div className="flex justify-center space-x-6 text-xs text-gray-400">
             <span>🔒 SSL Encrypted</span>
-            <span>💳 Secure Processing</span>
+            <span>💳 Multiple Payment Methods</span>
             <span>✅ Verified Platform</span>
           </div>
         </div>

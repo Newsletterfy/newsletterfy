@@ -84,13 +84,13 @@ export default function PayoutManagement() {
                     backgroundColor: {
                       bank_transfer: 'rgba(59, 130, 246, 0.1)',
                       paypal: 'rgba(99, 102, 241, 0.1)',
-                      stripe: 'rgba(16, 185, 129, 0.1)',
+                      intasend: 'rgba(16, 185, 129, 0.1)',
                       crypto: 'rgba(245, 158, 11, 0.1)'
                     }[payout.payout_method],
                     color: {
                       bank_transfer: 'rgb(59, 130, 246)',
                       paypal: 'rgb(99, 102, 241)',
-                      stripe: 'rgb(16, 185, 129)',
+                      intasend: 'rgb(16, 185, 129)',
                       crypto: 'rgb(245, 158, 11)'
                     }[payout.payout_method]
                   }}>

@@ -53,12 +53,7 @@ export default function Newsletter({ initialShowEditor = false, onEditorClose, u
     scheduledTime: "",
   });
 
-  const [subscriberSegments] = useState([
-    { id: "all", name: "All Subscribers", count: 1250 },
-    { id: "active", name: "Active Readers", count: 850 },
-    { id: "premium", name: "Premium Subscribers", count: 320 },
-    { id: "inactive", name: "Inactive (90+ days)", count: 400 },
-  ]);
+  const [subscriberSegments, setSubscriberSegments] = useState([]);
 
   const [testEmail, setTestEmail] = useState("");
   const [showPreview, setShowPreview] = useState(false);
@@ -87,19 +82,41 @@ export default function Newsletter({ initialShowEditor = false, onEditorClose, u
     }
   }, [pendingAdContent, showEditor]);
 
-  // Fetch active donation tiers
+  // Fetch active donation tiers and subscriber segments
   useEffect(() => {
     const fetchDonationTiers = async () => {
       try {
         const response = await fetch('/api/monetization/donation-tiers');
         if (!response.ok) throw new Error('Failed to fetch donation tiers');
         const data = await response.json();
-        setActiveDonationTiers(data.filter(tier => tier.active));
+        const tiers = data.tiers || data || [];
+        setActiveDonationTiers(Array.isArray(tiers) ? tiers.filter(tier => tier.status === 'active') : []);
       } catch (error) {
         console.error('Error fetching donation tiers:', error);
+        setActiveDonationTiers([]);
       }
     };
+
+    const fetchSubscriberSegments = async () => {
+      try {
+        const response = await fetch('/api/subscriber-segments');
+        if (!response.ok) throw new Error('Failed to fetch subscriber segments');
+        const data = await response.json();
+        setSubscriberSegments(data.segments || []);
+      } catch (error) {
+        console.error('Error fetching subscriber segments:', error);
+        // Fallback to default segments
+        setSubscriberSegments([
+          { id: "all", name: "All Subscribers", subscriber_count: 0 },
+          { id: "active", name: "Active Readers", subscriber_count: 0 },
+          { id: "premium", name: "Premium Subscribers", subscriber_count: 0 },
+          { id: "inactive", name: "Inactive (90+ days)", subscriber_count: 0 },
+        ]);
+      }
+    };
+
     fetchDonationTiers();
+    fetchSubscriberSegments();
   }, []);
 
   // Fetch previous posts when AI agent is enabled
@@ -738,8 +755,8 @@ export default function Newsletter({ initialShowEditor = false, onEditorClose, u
                 className="w-full px-3 py-2 border rounded-md focus:ring-cyan-500 focus:border-cyan-500"
               >
                 {subscriberSegments.map(segment => (
-                  <option key={segment.id} value={segment.id}>
-                    {segment.name} ({segment.count} subscribers)
+                  <option key={segment.id || segment.segment_type} value={segment.id || segment.segment_type}>
+                    {segment.name} ({segment.subscriber_count || segment.count || 0} subscribers)
                   </option>
                 ))}
               </select>

@@ -95,7 +95,7 @@ export async function PUT(req) {
     }
 
     // Validate payout method
-    const validPayoutMethods = ['bank_transfer', 'paypal', 'stripe', 'crypto'];
+    const validPayoutMethods = ['bank_transfer', 'mpesa', 'intasend', 'crypto'];
     if (!validPayoutMethods.includes(payout_method)) {
       return NextResponse.json(
         { error: 'Invalid payout method' },

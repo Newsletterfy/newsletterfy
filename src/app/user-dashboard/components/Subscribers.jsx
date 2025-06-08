@@ -15,53 +15,40 @@ export default function Subscribers() {
     status: 'active',
   });
 
-  const [subscribers] = React.useState([
-    {
-      id: 1,
-      email: "sarah@example.com",
-      name: "Sarah Johnson",
-      joinDate: "2024-01-10",
-      status: "active",
-      newsletters: ["Tech Weekly", "Finance Insights"],
-      stats: {
-        lastOpened: "2024-01-20",
-        totalOpens: 45,
-        totalClicks: 12,
-        location: "New York, USA",
-        openRate: 85,
-        clickRate: 35,
-        qualityScore: 78,
-        engagementHistory: [
-          { date: "2024-01-20", type: "open", newsletter: "Tech Weekly" },
-          { date: "2024-01-18", type: "click", newsletter: "Finance Insights" },
-          { date: "2024-01-15", type: "open", newsletter: "Tech Weekly" },
-        ]
-      }
-    },
-    {
-      id: 2,
-      email: "mike@example.com",
-      name: "Mike Smith",
-      joinDate: "2024-01-12",
-      status: "active",
-      newsletters: ["Health & Wellness"],
-    },
-    {
-      id: 3,
-      email: "emma@example.com",
-      name: "Emma Davis",
-      joinDate: "2024-01-15",
-      status: "pending",
-      newsletters: ["Tech Weekly"],
-    },
-  ]);
-
-  const [subscriberStats] = React.useState({
-    total: 4240,
-    active: 3890,
-    growth: 12.5,
-    engagement: 78.3,
+  const [subscribers, setSubscribers] = React.useState([]);
+  const [subscriberStats, setSubscriberStats] = React.useState({
+    total: 0,
+    active: 0,
+    growth: 0,
+    engagement: 0,
   });
+  const [loading, setLoading] = React.useState(true);
+
+  // Fetch subscribers data
+  React.useEffect(() => {
+    const fetchSubscribers = async () => {
+      try {
+        const response = await fetch('/api/user/subscribers');
+        if (!response.ok) throw new Error('Failed to fetch subscribers');
+        const data = await response.json();
+        
+        setSubscribers(data.subscribers || []);
+        setSubscriberStats({
+          total: data.stats?.total || 0,
+          active: data.stats?.active || 0,
+          growth: data.stats?.growth || 0,
+          engagement: data.stats?.engagement || 0,
+        });
+      } catch (error) {
+        console.error('Error fetching subscribers:', error);
+        toast.error('Failed to load subscribers');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSubscribers();
+  }, []);
 
   // Handle file upload
   const handleFileUpload = async (e) => {

@@ -39,9 +39,14 @@ export default function Funds() {
       if (!response.ok) throw new Error('Failed to fetch funds data');
       
       const data = await response.json();
-      setBalanceStats(data.balanceStats);
-      setTransactions(data.transactions);
-      setWithdrawalMethods(data.withdrawalMethods);
+      setBalanceStats(data.balanceStats || {
+        availableBalance: 0,
+        pendingBalance: 0,
+        totalEarnings: 0,
+        withdrawnAmount: 0,
+      });
+      setTransactions(data.transactions || []);
+      setWithdrawalMethods(data.withdrawalMethods || []);
     } catch (error) {
       toast.error('Failed to load funds data');
       console.error(error);
@@ -104,7 +109,7 @@ export default function Funds() {
         return;
       }
 
-      if (amount > balanceStats.availableBalance) {
+      if (amount > (balanceStats?.availableBalance || 0)) {
         toast.error('Insufficient funds');
         return;
       }
@@ -127,8 +132,8 @@ export default function Funds() {
       setTransactions([transaction, ...transactions]);
       setBalanceStats({
         ...balanceStats,
-        availableBalance: balanceStats.availableBalance - amount,
-        withdrawnAmount: balanceStats.withdrawnAmount + amount,
+        availableBalance: (balanceStats?.availableBalance || 0) - amount,
+        withdrawnAmount: (balanceStats?.withdrawnAmount || 0) + amount,
       });
 
       setShowWithdrawModal(false);
@@ -193,7 +198,7 @@ export default function Funds() {
             <i className="fas fa-wallet text-2xl text-green-500"></i>
           </div>
           <p className="text-3xl font-bold text-gray-900">
-            ${balanceStats.availableBalance.toLocaleString()}
+            ${(balanceStats?.availableBalance || 0).toLocaleString()}
           </p>
           <p className="text-sm text-gray-500 mt-2">
             Ready to withdraw
@@ -208,7 +213,7 @@ export default function Funds() {
             <i className="fas fa-clock text-2xl text-yellow-500"></i>
           </div>
           <p className="text-3xl font-bold text-gray-900">
-            ${balanceStats.pendingBalance.toLocaleString()}
+            ${(balanceStats?.pendingBalance || 0).toLocaleString()}
           </p>
           <p className="text-sm text-gray-500 mt-2">
             Processing
@@ -223,7 +228,7 @@ export default function Funds() {
             <i className="fas fa-chart-line text-2xl text-cyan-500"></i>
           </div>
           <p className="text-3xl font-bold text-gray-900">
-            ${balanceStats.totalEarnings.toLocaleString()}
+            ${(balanceStats?.totalEarnings || 0).toLocaleString()}
           </p>
           <p className="text-sm text-gray-500 mt-2">
             Lifetime earnings
@@ -238,7 +243,7 @@ export default function Funds() {
             <i className="fas fa-money-bill-wave text-2xl text-cyan-400"></i>
           </div>
           <p className="text-3xl font-bold text-gray-900">
-            ${balanceStats.withdrawnAmount.toLocaleString()}
+            ${(balanceStats?.withdrawnAmount || 0).toLocaleString()}
           </p>
           <p className="text-sm text-gray-500 mt-2">
             Total withdrawn

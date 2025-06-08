@@ -8,17 +8,49 @@ import Analysis from "./components/Analysis";
 import Growth from "./components/Growth";
 import Funds from "./components/Funds";
 
+import UserProfile from "./components/UserProfile";
+
 export default function UserDashboard() {
   const [activeTab, setActiveTab] = React.useState("newsletters");
   const [showNewsletterEditor, setShowNewsletterEditor] = React.useState(false);
   const [pendingAdContent, setPendingAdContent] = React.useState(null);
+  const [showWelcome, setShowWelcome] = React.useState(false);
+  const [userPlan, setUserPlan] = React.useState('Free');
+
+  // Handle URL parameters for tab switching and welcome messages
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const tab = urlParams.get('tab');
+      const welcome = urlParams.get('welcome');
+      const newSubscription = urlParams.get('newSubscription');
+      
+      if (tab) {
+        setActiveTab(tab);
+      }
+      
+      if (welcome === 'true' || newSubscription === 'true') {
+        setShowWelcome(true);
+        // Auto-hide welcome message after 5 seconds
+        setTimeout(() => setShowWelcome(false), 5000);
+      }
+      
+      // Clear URL parameters after processing
+      if (tab || welcome || newSubscription) {
+        window.history.replaceState({}, '', '/user-dashboard');
+      }
+    }
+  }, []);
+
+  const supabase = createClientComponentClient();
 
   // Mock user data for demonstration (in a real app, this would come from auth/context)
   const mockUser = {
     id: "550e8400-e29b-41d4-a716-446655440000",
     email: "user@example.com",
     name: "John Doe",
-    username: "johndoe"
+    username: "johndoe",
+    plan: userPlan
   };
 
   const handleNewNewsletter = () => {
@@ -60,6 +92,8 @@ export default function UserDashboard() {
         return <Growth />;
       case "funds":
         return <Funds />;
+      case "profile":
+        return <UserProfile />;
       default:
         return (
           <Newsletter 
@@ -239,6 +273,18 @@ export default function UserDashboard() {
               >
                 <i className="fas fa-wallet mr-2"></i>
                 Funds
+                        </button>
+
+                        <button
+                onClick={() => setActiveTab("profile")}
+                className={`flex-1 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 ${
+                  activeTab === "profile"
+                    ? "bg-white text-cyan-600 shadow-sm"
+                    : "text-gray-600 hover:text-gray-900"
+                }`}
+              >
+                <i className="fas fa-user mr-2"></i>
+                Profile
                         </button>
             </nav>
                   </div>

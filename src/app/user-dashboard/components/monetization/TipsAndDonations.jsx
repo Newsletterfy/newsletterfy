@@ -337,7 +337,12 @@ export default function TipsAndDonations({ user, onClose }) {
                   <CardContent className="flex items-center justify-between p-4">
                     <div>
                       <p className="font-medium">
-                        {donation.donor_id.slice(0, 8)}... donated ${donation.amount}
+                        {donation.donor_id 
+                          ? `${donation.donor_id.slice(0, 8)}... donated $${donation.amount}`
+                          : donation.supporter 
+                            ? `${donation.supporter} donated $${donation.amount}`
+                            : `Anonymous supporter donated $${donation.amount}`
+                        }
                       </p>
                       {donation.message && (
                         <p className="text-sm text-muted-foreground mt-1">{donation.message}</p>
