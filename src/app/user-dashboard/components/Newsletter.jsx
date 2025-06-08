@@ -147,28 +147,67 @@ export default function Newsletter({ initialShowEditor = false, onEditorClose, u
   const generateDonationTiersSection = () => {
     if (!activeDonationTiers.length) return '';
 
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://yourdomain.com';
+    const donateUrl = `${baseUrl}/donate/${encodeURIComponent(user?.id || 'creator')}`;
+
     return `
-      <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
-        <h3 style="font-size: 1.25rem; font-weight: 600; color: #111827; margin-bottom: 1rem;">Support Our Newsletter</h3>
-        <p style="color: #4b5563; margin-bottom: 1rem;">If you find our content valuable, consider supporting us through one of these tiers:</p>
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
+      <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #e5e7eb; background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); border-radius: 12px; padding: 24px;">
+        <div style="text-align: center; margin-bottom: 24px;">
+          <h3 style="font-size: 1.5rem; font-weight: 700; color: #1e293b; margin-bottom: 0.5rem;">💝 Support Our Newsletter</h3>
+          <p style="color: #64748b; font-size: 1rem; max-width: 500px; margin: 0 auto;">Your support helps us create amazing content and keep this newsletter free for everyone!</p>
+        </div>
+        
+        <!-- Quick Donation Buttons -->
+        <div style="text-align: center; margin-bottom: 24px;">
+          <a href="${donateUrl}" style="display: inline-block; background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; margin: 0 8px 8px 0; box-shadow: 0 4px 6px rgba(59, 130, 246, 0.25);">
+            ☕ Buy us a coffee ($5)
+          </a>
+          <a href="${donateUrl}" style="display: inline-block; background: linear-gradient(135deg, #10b981 0%, #047857 100%); color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; margin: 0 8px 8px 0; box-shadow: 0 4px 6px rgba(16, 185, 129, 0.25);">
+            🙌 Support us ($10)
+          </a>
+          <a href="${donateUrl}" style="display: inline-block; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; margin: 0 8px 8px 0; box-shadow: 0 4px 6px rgba(245, 158, 11, 0.25);">
+            ❤️ Be a patron ($25)
+          </a>
+        </div>
+
+        ${activeDonationTiers.length > 0 ? `
+        <!-- Detailed Tiers -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-top: 24px;">
           ${activeDonationTiers.map(tier => `
-            <div style="border: 1px solid #e5e7eb; border-radius: 0.5rem; padding: 1rem;">
-              <h4 style="font-size: 1.125rem; font-weight: 600; color: #111827; margin-bottom: 0.5rem;">${tier.name}</h4>
-              <p style="font-size: 1.5rem; font-weight: 700; color: #111827; margin-bottom: 0.5rem;">$${tier.amount}</p>
-              <p style="color: #4b5563; margin-bottom: 1rem;">${tier.description}</p>
-              <ul style="margin-bottom: 1rem;">
-                ${tier.perks.map(perk => `
-                  <li style="color: #4b5563; margin-bottom: 0.5rem;">
-                    <span style="color: #10b981; margin-right: 0.5rem;">✓</span>${perk}
-                  </li>
-                `).join('')}
-              </ul>
-              <a href="/donate/${tier.id}" style="display: inline-block; background-color: #06b6d4; color: white; padding: 0.5rem 1rem; border-radius: 0.375rem; text-decoration: none; font-weight: 500;">
-                Support at this tier
+            <div style="background: white; border: 2px solid #e2e8f0; border-radius: 12px; padding: 20px; text-align: center; transition: all 0.3s ease;">
+              <div style="font-size: 2rem; margin-bottom: 8px;">${tier.name.includes('coffee') || tier.amount <= 5 ? '☕' : tier.amount <= 15 ? '🙌' : '❤️'}</div>
+              <h4 style="font-size: 1.25rem; font-weight: 700; color: #1e293b; margin-bottom: 8px;">${tier.name}</h4>
+              <p style="font-size: 2rem; font-weight: 800; color: #3b82f6; margin-bottom: 12px;">$${tier.amount}</p>
+              <p style="color: #64748b; margin-bottom: 16px; font-size: 0.95rem;">${tier.description}</p>
+              ${tier.perks?.length ? `
+                <ul style="margin-bottom: 20px; padding-left: 0; list-style: none;">
+                  ${tier.perks.map(perk => `
+                    <li style="color: #475569; margin-bottom: 8px; font-size: 0.9rem;">
+                      <span style="color: #10b981; margin-right: 8px; font-weight: bold;">✓</span>${perk}
+                    </li>
+                  `).join('')}
+                </ul>
+              ` : ''}
+              <a href="${donateUrl}?tier=${tier.id}" style="display: inline-block; background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); color: white; padding: 12px 20px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 0.95rem; box-shadow: 0 4px 6px rgba(99, 102, 241, 0.25);">
+                Choose this tier
               </a>
             </div>
           `).join('')}
+        </div>
+        ` : ''}
+
+        <!-- Custom Amount -->
+        <div style="text-align: center; margin-top: 24px; padding-top: 20px; border-top: 1px solid #e2e8f0;">
+          <p style="color: #64748b; margin-bottom: 12px; font-size: 0.95rem;">Or choose your own amount:</p>
+          <a href="${donateUrl}" style="display: inline-block; background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; box-shadow: 0 4px 6px rgba(139, 92, 246, 0.25);">
+            💖 Donate Custom Amount
+          </a>
+        </div>
+
+        <div style="text-align: center; margin-top: 20px;">
+          <p style="color: #9ca3af; font-size: 0.8rem;">
+            🔒 Secure payments • You'll be redirected to our donation page
+          </p>
         </div>
       </div>
     `;
